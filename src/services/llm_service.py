@@ -4,14 +4,23 @@ load_dotenv()
 
 from langchain_openai import ChatOpenAI
 
-client = ChatOpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv('OPEN_ROUTER_API'),
-    model='google/gemma-3n-e2b-it:free',
-    temperature=0
-)
+class LLMService():
+    def __init__(self, model: str, temperature: float = 0):
+        self.client = ChatOpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=os.getenv('OPEN_ROUTER_API'),
+            model=model,
+            temperature=temperature
+        )
 
-def invoke(prompt: str) -> str:
-    response = client.invoke(prompt)
+    def prompt(self, message: str) -> str:
+        """Send a standalone prompt"""
+        response = self.client.invoke(message)
 
-    return response.content
+        return response.content
+
+    def chat(self, messages: list) -> str:
+        """Send a list of messages for contextual chats (chat history)"""
+        response = self.client.invoke(messages)
+
+        return response.content

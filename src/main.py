@@ -1,7 +1,12 @@
-from services import llm_service as llm
+from services.llm_service import LLMService
+from agents.base_agent import BaseAgent
+
+llm = LLMService('google/gemma-3n-e2b-it:free')
+agent = BaseAgent(llm)
 
 def main():
     print("CLI Chatbot: Hello! Type 'bye' to exit.")
+
     while True:
         user_input = input("You: ").strip()
         
@@ -9,13 +14,9 @@ def main():
             print("CLI Chatbot: Goodbye!")
             break
 
-        response = generate_response(user_input)
-        print(f"CLI Chatbot: {response}")
-
-def generate_response(message):
-    response = llm.invoke(message)
-    
-    return response
+        agent.observe(user_input)
+        response = agent.decide_and_act()
+        print("Agent:", agent.reflect(response))
 
 if __name__ == "__main__":
     main()
