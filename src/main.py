@@ -1,8 +1,9 @@
 from services.llm_service import LLMService
-from agents.base_agent import BaseAgent
+from agents.react_agent import ReactAgent
+from tools._temp import ping
 
-llm = LLMService('google/gemma-3n-e2b-it:free')
-agent = BaseAgent(llm)
+llm = LLMService('qwen/qwen3-coder:free')
+agent = ReactAgent(llm, [ping])
 
 def main():
     print("CLI Chatbot: Hello! Type 'bye' to exit.")
