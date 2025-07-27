@@ -14,9 +14,8 @@ def main():
             print("CLI Chatbot: Goodbye!")
             break
 
-        agent.observe(user_input)
-        response = agent.decide_and_act()
-        print("Agent:", agent.reflect(response))
+        response = agent.invoke(user_input)
+        print("Agent:", response)
 
 if __name__ == "__main__":
     main()
