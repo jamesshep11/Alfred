@@ -1,5 +1,8 @@
+import os
+import subprocess
 from pathlib import Path
 from typing import List, Dict, Union
+
 from langchain_community.document_loaders import TextLoader
 from langchain_pymupdf4llm import PyMuPDF4LLMLoader
 from langchain.schema import Document
@@ -27,7 +30,12 @@ def load_document(path: Union[str, Path]) -> List[Dict[str, Union[str, dict]]]:
     }
 
     if ext not in loader_map:
-        raise ValueError(f"Unsupported file type: {ext}")
+        try:
+            new_pdf = convert_to_pdf(path)
+            return load_document(new_pdf)
+        except RuntimeError as e :
+            print(e)
+            return []
 
     loader = loader_map[ext](str(path))
     docs: List[Document] = loader.load()
@@ -37,8 +45,27 @@ def load_document(path: Union[str, Path]) -> List[Dict[str, Union[str, dict]]]:
         for doc in docs
     ]
 
+def convert_to_pdf(input_path: Path) -> str:
+    """
+    Uses pandoc cli subprocess to convert files to pdf.
+    New pdf files a stored in ./_temp folder.
+    """
+    output_path = Path(f"{os.getcwd()}/loaders/_temp/{input_path.stem}.pdf")
+    print(output_path)
+    
+    try:
+        subprocess.run(
+            ["pandoc", input_path, "-o", output_path],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        return output_path
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"Pandoc failed: {e.stderr.decode()}") from e
+
 if __name__ == "__main__":
-    result = load_document(Path("C:/Users/USER/Documents/Work/CV.pdf"))
+    result = load_document(Path("C:/Users/USER/Documents/Work/CV.docx"))
     print(len(result))
     
     for text in result:

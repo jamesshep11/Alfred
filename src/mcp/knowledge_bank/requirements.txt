@@ -1,5 +1,0 @@
-langchain
-langchain_community
-
-pymupdf
-langchain-pymupdf4llm
