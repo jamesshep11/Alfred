@@ -23,12 +23,14 @@ def load_document(path: Union[str, Path]) -> List[Dict[str, Union[str, dict]]]:
     path = Path(path)
     ext = path.suffix.lower()
 
+    # File type mapped to appropriate Loader
     loader_map = {
         ".txt": TextLoader,
         ".md": TextLoader,
         ".pdf": PyMuPDF4LLMLoader, # TODO: PyMuPDF4LLM Pro (paid)
     }
 
+    # Convert unsupported types to pdf; then reprocess
     if ext not in loader_map:
         try:
             new_pdf = convert_to_pdf(path)
@@ -37,6 +39,7 @@ def load_document(path: Union[str, Path]) -> List[Dict[str, Union[str, dict]]]:
             print(e)
             return []
 
+    # Select and invoke loader
     loader = loader_map[ext](str(path))
     docs: List[Document] = loader.load()
 
@@ -51,7 +54,6 @@ def convert_to_pdf(input_path: Path) -> str:
     New pdf files a stored in ./_temp folder.
     """
     output_path = Path(f"{os.getcwd()}/loaders/_temp/{input_path.stem}.pdf")
-    print(output_path)
     
     try:
         subprocess.run(
@@ -66,7 +68,6 @@ def convert_to_pdf(input_path: Path) -> str:
 
 if __name__ == "__main__":
     result = load_document(Path("C:/Users/USER/Documents/Work/CV.docx"))
-    print(len(result))
     
     for text in result:
         print(text['text'])
