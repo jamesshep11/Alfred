@@ -19,3 +19,11 @@ class ReactAgent():
             config = {"configurable": {"thread_id": "1"}}
             )
         return response.get('messages')[-1].content.strip()
+    
+    async def ainvoke(self, message: str) -> str:
+        response = await self.agent.ainvoke(
+            {"messages": [{"role": "user", "content": message}]},
+            config = {"configurable": {"thread_id": "1"}}
+            )
+        
+        return response.get('messages')[-1].content.strip()
