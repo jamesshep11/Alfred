@@ -7,7 +7,7 @@ from langchain_community.document_loaders import TextLoader
 from langchain_pymupdf4llm import PyMuPDF4LLMLoader
 from langchain.schema import Document
 
-def load_document(path: Union[str, Path]) -> List[Dict[str, Union[str, dict]]]:
+def load_document(path: Union[str, Path]) -> List[Document]:
     """
     Loads a document from the given path using the appropriate LangChain loader
     based on file extension. Returns a list of text chunks with metadata.
@@ -32,6 +32,7 @@ def load_document(path: Union[str, Path]) -> List[Dict[str, Union[str, dict]]]:
 
     # Convert unsupported types to pdf; then reprocess
     if ext not in loader_map:
+        # TODO Check if pdf file exists (already converted reviously)
         try:
             new_pdf = convert_to_pdf(path)
             return load_document(new_pdf)
@@ -43,10 +44,10 @@ def load_document(path: Union[str, Path]) -> List[Dict[str, Union[str, dict]]]:
     loader = loader_map[ext](str(path))
     docs: List[Document] = loader.load()
 
-    return [
-        {"text": doc.page_content.replace("\n\n", "\n"), "metadata": doc.metadata}
-        for doc in docs
-    ]
+    for doc in docs:
+        doc.page_content = doc.page_content.replace("\n\n", "\n")
+
+    return docs
 
 def convert_to_pdf(input_path: Path) -> str:
     """
@@ -67,8 +68,13 @@ def convert_to_pdf(input_path: Path) -> str:
         raise RuntimeError(f"Pandoc failed: {e.stderr.decode()}") from e
 
 if __name__ == "__main__":
-    result = load_document(Path("C:/Users/USER/Documents/Work/CV.docx"))
+    results = load_document(Path("C:/Users/USER/Documents/Work/CV.docx"))
+
+    formatted_results = [
+        {"text": doc.page_content.replace("\n\n", "\n"), "metadata": doc.metadata}
+        for doc in results
+    ]
     
-    for text in result:
+    for text in formatted_results:
         print(text['text'])
         print(text['metadata'])
